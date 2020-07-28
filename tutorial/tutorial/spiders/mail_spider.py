@@ -45,7 +45,7 @@ class MailSpider(scrapy.Spider):
         except Exception as e:
             print(e)
         # regex parameters for searching for emails
-        phone_list = re.findall('(?:\+65 [\d]{4} [\d]{4}|\+65[\d]{8}|[\d]{4} [\d]{4}||[\d]{8})+', html_text)
+        phone_list = re.findall('(?:\+65 [\d]{4} [\d]{4}|\+65[\d]{8}|[\d]{4} [\d]{4}| [\d]{4} [\d]{4} )+', html_text)
         mail_list = re.findall('(?!.*\w{1}\.\w{1}\.\w{1})(?!.*\.google\.com)(?:(\w+@\w+\.[\w+\.{1}]+))+', html_text)
         # empty lists to add valid email and phone numbers to
         newPhoneList = []
@@ -77,11 +77,16 @@ class MailSpider(scrapy.Spider):
         # check if phone list is empty
         if len(phone_list) > 0:
             for numberIndex in range(len(phone_list)):
-                parsedNumber = pn.parse(phone_list[numberIndex], region='SG')
-                if pn.is_valid_number(parsedNumber) and phone_list[numberIndex] not in newPhoneList:
-                    newPhoneList.append(phone_list[numberIndex])
+                print(phone_list[numberIndex])
+                try:
+                    parsedNumber = pn.parse(phone_list[numberIndex], region='SG')
+                    if pn.is_valid_number(parsedNumber) and phone_list[numberIndex] not in newPhoneList:
+                        newPhoneList.append(phone_list[numberIndex])
+                except Exception as e:
+                    print(e)
+                    # not a valid phone number, so do not add or append
 
-        # add dictiionary of emails and numbers to csv
+        # add dictionary of emails and numbers to csv
         phonedic = {'phone': newPhoneList, 'link': str(response.url)}
         maildic = {'email': newMailList, 'link': str(response.url)}
         maildf = pd.DataFrame(maildic)
@@ -160,8 +165,8 @@ def get_info(tag, n, language, path, reject=[]):
 
     phdf = pd.read_csv("ph_" + path, index_col=0)
     phdf.columns = ['phone', 'link']
-    phdf = df.drop_duplicates(subset='phone')
-    phdf = df.reset_index(drop=True)
+    phdf = phdf.drop_duplicates(subset='phone')
+    phdf = phdf.reset_index(drop=True)
     phdf.to_csv("ph_" + path, mode='w', header=True)
 
     process.stop()
@@ -181,7 +186,7 @@ def file_namer(search_term):
 key = "AIzaSyAv8Cbe7A-tlSfEwLDwo7romFPRj7vXD2Y"
 search_param = "Singapore Pharmaceuticals Contact"
 # Incomplete: Chemicals Industry Contacts
-csv_path = "paints_coatings.csv"
+csv_path = "complete_crawls/paints_coatings.csv"
 reject_words = ["facebook", "wikipedia", "twitter", 'wiki', 'youtube', "flickr", "instagram", "imgur", "jobscentral",
                 "jobstreet", "linkedin", "straitstimes", "channelnewsasia", "sphsubscription", "todayonline", "asiaone",
                 "singaporenews", "mothership", "theindependent", "career", "careers", "pdf", "shell", "taleo"]
