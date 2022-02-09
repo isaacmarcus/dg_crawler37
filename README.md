@@ -1,3 +1,5 @@
+![preview_img](https://github.com/isaacmarcus/cvapp/blob/main/assets/images/crawler_ss.png?raw=true)
+
 # Python Webcrawler
 
 A python script that webcrawls for emails and phone numbers on google using regex. Rejected words can be indicated to ignore and isolate as outliers. A csv file will then be created for the user to refer to after.
